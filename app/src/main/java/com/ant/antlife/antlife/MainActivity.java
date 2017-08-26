@@ -1,48 +1,55 @@
 package com.ant.antlife.antlife;
 
 import android.Manifest;
-import android.app.Dialog;
-import android.app.FragmentManager;
-import android.content.Context;
+import android.app.Activity;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.test.mock.MockPackageManager;
 import android.view.Gravity;
+import android.view.Window;
 import android.view.WindowManager;
-import android.widget.TextView;
-import android.widget.Toast;
+import android.widget.Button;
+import android.widget.ListView;
 
-import com.google.android.gms.maps.CameraUpdateFactory;
-import com.google.android.gms.maps.GoogleMap;
-import com.google.android.gms.maps.MapFragment;
-import com.google.android.gms.maps.OnMapReadyCallback;
-import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.Marker;
-import com.google.android.gms.maps.model.MarkerOptions;
-import com.google.maps.android.clustering.Cluster;
-import com.google.maps.android.clustering.ClusterManager;
+public class MainActivity extends AppCompatActivity {
 
-import java.util.ArrayList;
-
-public class MainActivity extends AppCompatActivity implements OnMapReadyCallback {
-
+    public static Activity mainactivity;
     private static final int REQUEST_CODE_PERMISSION = 2;
     //private onKeyBackPressedListener mOnKeyBackPressedListener;
     private SharedPreferences settings;
+    DrawerLayout drawerLayout;
     String gps_permission;
     String id;
     /** 구글 맵 관련**/
-    GoogleMap googleMap;
+    //GoogleMap googleMap;
     //Marker m1,m2,m3,m4,m5,m6,m7;
-    ClusterManager<House> mClusterManager;
+    //ClusterManager<House> mClusterManager;
+    ListView listview;
+    Button menu_btn1,menu_btn2,menu_btn3,menu_btn4;
+    Button post_btn,good_btn,bad_btn;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        mainactivity = MainActivity.this;
+
+        drawerLayout=(DrawerLayout)findViewById(R.id.drawer_layout);
+
         settings = getSharedPreferences("KEY", 0);
         id = settings.getString("ID", "").toString();
+
+        /** status바(최상단 바) **/
+        int id = getResources().getIdentifier("config_enableTranslucentDecor", "bool", "android");
+        if (id != 0 && getResources().getBoolean(id)) {
+            Window window = getWindow();
+            window.setFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS, WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
+        }
+
+        getSupportFragmentManager().beginTransaction().replace(R.id.tab_frame, new TabMain()).commit();
+
         //Toast.makeText(getApplicationContext(), id, Toast.LENGTH_SHORT).show();
         gps_permission = settings.getString("gps_permission", "false").toString();
         /** 최초 실행 시 위치 권한 확인**/
@@ -66,12 +73,11 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             }
 
         }
-        FragmentManager fragmentManager = getFragmentManager();
-        MapFragment mapFragment = (MapFragment) fragmentManager
-                .findFragmentById(R.id.map);
-        mapFragment.getMapAsync(this);
 
 
+    }
+    public void openHamberger(){
+        drawerLayout.openDrawer(Gravity.LEFT);
     }
 
     /** back키 overriding
@@ -87,6 +93,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
      }
      }
      */
+    /*
     @Override
     public void onMapReady(final GoogleMap map) { //
         googleMap = map;
@@ -121,14 +128,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             init_lng += 0.1;
             cnt++;
         }
-        /*
-        for(int i=0; i<10; i++){
-            markerOptionses.add(new MarkerOptions());
-            markerOptionses.get(i).position(new LatLng(lat_list.get(i),lng_list.get(i))).title(place_name.get(i)).snippet(place_name.get(i));
-            googleMap.addMarker(markerOptionses.get(i)).showInfoWindow();
-        }
-        */
-        /** 군집 되어서 합쳐질 마커들 **/
+
         for(int i = 0; i<10; i++){
             cluster_lat_list.add(cluster_lat);
             cluster_lng_list.add(cluster_lng);
@@ -171,102 +171,25 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         mClusterManager.setOnClusterClickListener(new ClusterManager.OnClusterClickListener<House>() {
             @Override
             public boolean onClusterClick(Cluster<House> cluster) {
-                cluster.getItems();
+                PlaceDialog placeDialog;
+                placeDialog = new PlaceDialog(MainActivity.this,cluster.getPosition().toString());
+                placeDialog.setCanceledOnTouchOutside(true);
+                placeDialog.show();
                 return false;
             }
         });
-        /**
-        googleMap.setOnCameraMoveListener(new GoogleMap.OnCameraMoveListener() {
-            @Override
-            public void onCameraMove() {
-
-            }
-        });
-        **/
-    }
-    /*
-    private void setCluster(final GoogleMap googleMap) {
-        final List<House> mPosi = (List<House>) mClusterManager;
-        if(mPosi != null) {
-            if (mPosi.size() > 0) {
-                mClusterManager = new ClusterManager<House>(MainActivity.this, googleMap);
-                googleMap.setOnCameraIdleListener(mClusterManager);
-                googleMap.setOnMarkerClickListener(mClusterManager);
-
-                LatLngBounds.Builder builder = LatLngBounds.builder();  // Bounds 모든 데이터를 맵 안으로 보여주게 하기 위한
-                LatLngBounds bounds = addItems(builder, mPosi);         // 클러스터 Marker 추가
-                googleMap.moveCamera(CameraUpdateFactory.newLatLngBounds(bounds, ZoomLevel));
-                float zoom = googleMap.getCameraPosition().zoom - 0.5f;
-                googleMap.animateCamera(CameraUpdateFactory.zoomTo(zoom));
-
-                mClusterManager.setRenderer(new OwnIconRendered(mAppData, googleMap, mClusterManager));
-
-                // 내용 클릭시
-                googleMap.setOnInfoWindowClickListener(new GoogleMap.OnInfoWindowClickListener() {
-                    @Override
-                    public void onInfoWindowClick(Marker marker) {
-                    }
-                });
-
-                // 클러스터 클릭시 펼치기
-                mClusterManager.setOnClusterClickListener(new ClusterManager.OnClusterClickListener<PositionItem>() {
-                    @Override
-                    public boolean onClusterClick(Cluster<PositionItem> cluster) {
-                        LatLngBounds.Builder builder_c = LatLngBounds.builder();
-                        for (ClusterItem item : cluster.getItems()) {
-                            builder_c.include(item.getPosition());
-                        }
-                        LatLngBounds bounds_c = builder_c.build();
-                        googleMap.moveCamera(CameraUpdateFactory.newLatLngBounds(bounds_c, ZoomLevel));
-                        float zoom = googleMap.getCameraPosition().zoom - 0.5f;
-                        googleMap.animateCamera(CameraUpdateFactory.zoomTo(zoom));
-                        return true;
-                    }
-                });
-            }
-        }
     }
 
-    // 마커 추가
-    private void addItems(List<PositionItem> mPosi) {
-        for (PositionItem item : mPosi) {
-            mClusterManager.addItem(item);
-        }
-    }
-
-    // 마커 커스텀 class
-    class CustomIconRenderer extends DefaultClusterRenderer<PositionItem> {
-        public CustomIconRenderer(Context context, GoogleMap map, ClusterManager<PositionItem> clusterManager) {
-            super(context, map, clusterManager);
-        }
-
-        @Override
-        protected void onBeforeClusterItemRendered(PositionItem item, MarkerOptions markerOptions) {
-            int id = R.drawable.rect_memo1;
-            if(item.bg == 1) {                  // drawable 변경
-            } else if (item.bg == 2) {
-            } else if (item.bg == 3) {
-            } else if (item.bg == 4) {
-            }
-            Drawable d = ContextCompat.getDrawable(getActivity(), id);
-            BitmapDescriptor markerIcon = getMarkerIconFromDrawable(d);
-
-            markerOptions.icon(markerIcon);
-            markerOptions.snippet(item.getSnippet());
-            markerOptions.title(item.getTitle());
-            super.onBeforeClusterItemRendered(item, markerOptions);
-        }
-    }
-**/
     class PlaceDialog extends Dialog {
         String place;
-        TextView t1;
+        //TextView t1;
+        ListView listView;
         @Override
         protected void onCreate(Bundle savedInstanceState) {
             super.onCreate(savedInstanceState);
 
             WindowManager.LayoutParams lpWindow = new WindowManager.LayoutParams();
-            lpWindow.flags = WindowManager.LayoutParams.FLAG_DIM_BEHIND;
+            lpWindow.flags = WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON;
             lpWindow.dimAmount = 0.8f;
             lpWindow.gravity = Gravity.CENTER;
             lpWindow.width = WindowManager.LayoutParams.WRAP_CONTENT;
@@ -274,8 +197,8 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             getWindow().setAttributes(lpWindow);
 
             setContentView(R.layout.place_dialog);
-            t1 = (TextView)findViewById(R.id.dialog_textview);
-            t1.setText(place);
+            //t1 = (TextView)findViewById(R.id.dialog_textview);
+            //t1.setText(place);
             // 마커 클릭시 호출되는 콜백 메서드
             Toast.makeText(getApplicationContext(), place, Toast.LENGTH_SHORT).show();
             //
@@ -287,19 +210,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             this.place = place;
         }
     }
-    public void init_marker(){
-        /**
-        double latitude = gps.getLatitude();
-        double longitude = gps.getLongitude();
-
-        // Creating a LatLng object for the current location
-        LatLng latLng = new LatLng(latitude, longitude);
-        MarkerOptions moMan = new MarkerOptions();
-        moMan.title("1");
-        moMan.snippet("1");
-        moMan.position(latLng);
-        moMan.icon(BitmapDescriptorFactory.fromResource(R.drawable.pin1));
-        mMarkerMan=mGoogleMap.addMarker(moMan);**/
-    }
+            */
 
 }
