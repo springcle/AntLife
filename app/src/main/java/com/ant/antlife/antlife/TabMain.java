@@ -123,8 +123,8 @@ public class TabMain extends Fragment implements GoogleApiClient.OnConnectionFai
             getChildFragmentManager().beginTransaction().replace(R.id.map_container, mapFragment, "map").commit();
             mapFragment.getMapAsync(this);
         }
-        return super.onCreateView(inflater, container, savedInstanceState);
-
+        //return super.onCreateView(inflater, container, savedInstanceState);
+        return view;
     }
 
     @Override

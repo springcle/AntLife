@@ -13,40 +13,6 @@
         android:layout_height="match_parent"
         android:orientation="vertical">
 
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="80dp"></LinearLayout>
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="50dp"
-            android:orientation="horizontal">
-
-            <Button
-                android:id="@+id/menu_btn1"
-                android:layout_width="match_parent"
-                android:layout_height="50dp"
-                android:layout_weight="2" />
-
-            <Button
-                android:id="@+id/menu_btn2"
-                android:layout_width="match_parent"
-                android:layout_height="50dp"
-                android:layout_weight="2" />
-
-            <Button
-                android:id="@+id/menu_btn3"
-                android:layout_width="match_parent"
-                android:layout_height="50dp"
-                android:layout_weight="2" />
-
-            <Button
-                android:id="@+id/menu_btn4"
-                android:layout_width="match_parent"
-                android:layout_height="50dp"
-                android:layout_weight="2" />
-        </LinearLayout>
-
         <FrameLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent">
@@ -63,19 +29,15 @@
 -->
             <Button
                 android:id="@+id/post_btn"
-                android:layout_width="100dp"
+                android:layout_width="match_parent"
                 android:layout_height="60dp"
-                android:layout_gravity="bottom|left"
-                android:layout_marginBottom="30dp"
-                android:layout_marginLeft="40dp" />
+                android:layout_gravity="bottom|left"/>
 
             <Button
                 android:id="@+id/good_btn"
-                android:layout_width="60dp"
+                android:layout_width="match_parent"
                 android:layout_height="60dp"
-                android:layout_gravity="bottom|right"
-                android:layout_marginBottom="30dp"
-                android:layout_marginRight="105dp" />
+                android:layout_gravity="bottom|right"/>
 
             <Button
                 android:id="@+id/bad_btn"
