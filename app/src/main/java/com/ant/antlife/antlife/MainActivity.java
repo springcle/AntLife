@@ -78,7 +78,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
     */
     @Override
-    public void onMapReady(final GoogleMap map) {
+    public void onMapReady(final GoogleMap map) { //
         googleMap = map;
         LatLng SEOUL = new LatLng(37.56, 126.97);
         MarkerOptions markerOptions = new MarkerOptions();
